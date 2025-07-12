@@ -1,0 +1,16 @@
+# Ambiente Virtual
+venv/
+*.venv
+env/
+
+# Caches do Python
+__pycache__/
+*.pyc
+
+# Arquivos de IDE e sistema operacional
+.vscode/
+.idea/
+.DS_Store
+
+# PDFs de teste ou saída (para proteger a privacidade)
+*.pdf

@@ -1,0 +1,47 @@
+{
+  "CTkFont": {
+    "family": "Arial",
+    "size": 14,
+    "weight": "normal"
+  },
+  "color_scale": {
+    "color_1": "#2E7D32",
+    "color_2": "#388E3C",
+    "color_3": "#4CAF50",
+    "color_4": "#81C784",
+    "color_5": "#C8E6C9",
+    "color_6": "#E8F5E9"
+  },
+  "color_button": {
+    "fg_color": "#2E7D32",
+    "fg_color_hover": "#388E3C",
+    "fg_color_pressed": "#1B5E20",
+    "text_color": "#FFFFFF"
+  },
+  "color_button_secondary": {
+    "fg_color": "#455A64",
+    "fg_color_hover": "#546E7A",
+    "fg_color_pressed": "#263238",
+    "text_color": "#FFFFFF"
+  },
+  "color_label": {
+    "text_color": "#ECEFF1"
+  },
+  "color_entry": {
+    "fg_color": "#37474F",
+    "text_color": "#ECEFF1",
+    "placeholder_text_color": "#90A4AE",
+    "border_color": "#263238",
+    "border_width": 1
+  },
+  "color_frame": {
+    "fg_color": "#263238"
+  },
+  "color_bg": "#212121",
+  "color_text": "#ECEFF1",
+  "color_border": "#37474F",
+  "color_scrollbar": {
+    "fg_color": "#4CAF50",
+    "bg_color": "#263238"
+  }
+}

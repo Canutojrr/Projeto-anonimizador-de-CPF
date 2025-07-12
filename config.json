@@ -1,0 +1,11 @@
+{
+  "paths": {
+    "input_pdfs": "input_pdfs",
+    "manual_targets": "manual_targets",
+    "anonymized_pdfs": "anonymized_pdfs",
+    "compressed_pdfs": "compressed_pdfs",
+    "tesseract_path": "tesseract\\tesseract.exe",
+    "ghostscript_path": "ghostscript\\gswin64c.exe",
+    "log_path": "logs"
+  }
+}
