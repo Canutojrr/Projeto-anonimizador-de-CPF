@@ -1,53 +1,89 @@
-import os
-import fitz  # PyMuPDF
-import pytesseract
-from PIL import Image
-import io
-from config_gui import load_config
+import subprocess
+import logging
 
-def aplicar_ocr_em_pdf(input_path, output_path=None):
+# Configuração do logging para registrar informações em um arquivo.
+# O modo 'w' (write) limpa o log a cada nova execução.
+logging.basicConfig(level=logging.INFO, 
+                    format='%(asctime)s - %(levelname)s - %(message)s',
+                    filename='processamento.log',
+                    filemode='w')
+
+def processar_ocr_para_arquivamento(input_path: str, output_path: str) -> tuple[bool, str]:
     """
-    Aplica OCR em um PDF digitalizado (baseado em imagens) e salva em PDF/A-1b com compressão leve.
+    Executa o OCR em um PDF usando ocrmypdf com configurações modernas e
+    otimizadas para atender às especificações de arquivamento digital (AFD).
+
+    Args:
+        input_path (str): Caminho para o PDF de entrada (digitalizado sem OCR).
+        output_path (str): Caminho para salvar o PDF final processado.
+
+    Returns:
+        tuple[bool, str]: Uma tupla contendo (True/False para sucesso, mensagem de status).
     """
-    config = load_config()
-    tesseract_path = config["paths"].get("tesseract_path", "tesseract/tesseract.exe")
-    pytesseract.pytesseract.tesseract_cmd = tesseract_path
+    logging.info(f"Iniciando processo de OCR para o arquivo: {input_path}")
+    
+    command = [
+        "ocrmypdf",
+        
+        # Arquivos de entrada e saída
+        input_path,
+        output_path,
+        
+        # --- Configurações de Conformidade e Qualidade ---
+        "-l", "por",                          # Define o idioma para o Tesseract
+        "--output-type", "pdfa",              # Garante a saída no formato PDF/A (padrão recomendado)
+        
+        # --- Configurações de Otimização e Compressão ---
+        # -O é o atalho para --optimize. Nível 3 é o máximo.
+        # Para PDF/A, o ocrmypdf já seleciona a melhor compressão SEM PERDAS
+        # (lossless) por padrão, como JBIG2 para P&B e ZIP/Flate para outros.
+        "-O", "3",       
+        
+        # --- Configurações de Imagem ---
+        "--image-dpi", "300",                 # Força a resolução da imagem, caso o PDF não informe
+        "--clean",                            # Usa o 'unpaper' para limpar a imagem antes do OCR
+        
+        # --- Configurações de Execução ---
+        "--force-ocr",                        # Força o OCR mesmo que o arquivo já tenha algum texto
+        # A flag '--skip-text' foi removida para resolver o conflito com '--force-ocr'
+        "--tesseract-timeout", "600",         # Aumenta o tempo limite para páginas complexas
+    ]
 
-    if not os.path.isfile(input_path):
-        print(f"Arquivo não encontrado: {input_path}")
-        return
+    try:
+        logging.info(f"Executando comando: {' '.join(command)}")
+        
+        result = subprocess.run(
+            command,
+            check=True,
+            capture_output=True,
+            text=True,
+            encoding='utf-8'
+        )
+        
+        logging.info("Processo de OCR concluído com sucesso.")
+        logging.info(f"Saída do ocrmypdf:\n{result.stdout}")
+        return True, f"OCR e otimização concluídos com sucesso. Salvo em: {output_path}"
 
-    doc = fitz.open(input_path)
-    pdf_ocr = fitz.open()  # Novo PDF com OCR
+    except FileNotFoundError:
+        error_message = "Erro: 'ocrmypdf' não encontrado. Verifique se ele está instalado e no PATH do sistema."
+        logging.error(error_message)
+        return False, error_message
+        
+    except subprocess.CalledProcessError as e:
+        error_message = f"Erro durante a execução do ocrmypdf: {e.stderr}"
+        logging.error(error_message)
+        return False, error_message
 
-    for page in doc:
-        pix = page.get_pixmap(dpi=300, colorspace=fitz.csGRAY)  # Imagem em tons de cinza
-        img_bytes = pix.tobytes("png")
-        img = Image.open(io.BytesIO(img_bytes))
+    except Exception as e:
+        error_message = f"Um erro inesperado ocorreu: {str(e)}"
+        logging.error(error_message)
+        return False, error_message
 
-        # Aplicando OCR com pytesseract
-        texto_ocr = pytesseract.image_to_pdf_or_hocr(img, extension='pdf')
-
-        # Inserir a página OCR como imagem com texto reconhecido
-        ocr_page = fitz.open("pdf", texto_ocr)
-        pdf_ocr.insert_pdf(ocr_page)
-
-    # Definindo nome de saída
-    if not output_path:
-        base, ext = os.path.splitext(input_path)
-        output_path = base + "_ocr.pdf"
-
-    # Salvar com compactação e compatibilidade PDF/A-1b
-    pdf_ocr.save(output_path, garbage=4, deflate=True, clean=True, incremental=False, encryption=0)
-    pdf_ocr.close()
-    print(f"OCR aplicado e salvo em: {output_path}")
-
-if __name__ == "__main__":
-    import argparse
-
-    parser = argparse.ArgumentParser(description="Aplicar OCR em PDFs digitalizados")
-    parser.add_argument("input_pdf", help="Caminho para o PDF digitalizado")
-    parser.add_argument("-o", "--output", help="Caminho do PDF OCR de saída (opcional)")
-    args = parser.parse_args()
-
-    aplicar_ocr_em_pdf(args.input_pdf, args.output)
+# Bloco para testes rápidos e diretos do script
+if __name__ == '__main__':
+    print("Testando a função de OCR (versão final corrigida)...")
+    # Para testar, descomente as linhas abaixo e substitua com caminhos reais
+    # input_pdf = "caminho/para/seu/pdf_sem_ocr.pdf"
+    # output_pdf = "caminho/para/seu/pdf_com_ocr.pdf"
+    # success, message = processar_ocr_para_arquivamento(input_pdf, output_pdf)
+    # print(f"Resultado: {success}\nMensagem: {message}")

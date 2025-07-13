@@ -14,3 +14,4 @@ __pycache__/
 
 # PDFs de teste ou saída (para proteger a privacidade)
 *.pdf
+*.log
