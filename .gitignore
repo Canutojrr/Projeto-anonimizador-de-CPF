@@ -15,3 +15,7 @@ __pycache__/
 # PDFs de teste ou saída (para proteger a privacidade)
 *.pdf
 *.log
+
+# Arquivos de Debug e Backup
+*.bak
+debug_texto_falhou_*.txt
